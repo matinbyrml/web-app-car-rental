@@ -1,0 +1,175 @@
+/* modelSpec.css */
+
+:root {
+    --primary-color: #0d3b66;    /* deep navy */
+    --accent-color: #f95738;     /* warm coral */
+    --danger-color: #e63946;     /* delete red */
+    --text-dark: #333;
+    --bg-light: #fff;
+    --bg-page: #f4f4f9;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+.modelSpec {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: var(--bg-page);
+}
+
+.modelSpec header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modelSpec header h1 {
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.modelSpec header button {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.modelSpec header button:hover {
+    background: #d94f30;
+}
+
+/* Shared card style for details and form */
+.details-view,
+.edit-form {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.details-view h2,
+.edit-form h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+/* Read-only details layout */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.detail-value {
+    color: var(--text-dark);
+}
+
+/* Form fields */
+.form-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+/* Button row */
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.button-group button {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.button-group button:first-child {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.button-group button:first-child:hover {
+    background: #d94f30;
+}
+
+.button-group button:nth-child(2) {
+    background: #ccc;
+    color: var(--text-dark);
+}
+
+.button-group button:nth-child(2):hover {
+    background: #aaa;
+}
+
+.delete-button {
+    background: var(--danger-color);
+    color: #fff;
+}
+
+.delete-button:hover {
+    background: #c42f38;
+}.detail-item {
+     display: grid;
+     /* 1st col = icon width, 2nd = just big enough for the longest label, 3rd = rest */
+     grid-template-columns: auto max-content 1fr;
+     align-items: center;
+     column-gap: 0.75rem;
+     padding: 0.75rem 0;
+     border-bottom: 1px solid #eee;
+ }
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-icon {
+    color: var(--accent-color);
+    font-size: 1.25rem;
+    /* no need for min-width any more */
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    /* With max-content above, this will size automatically to the widest label */
+}
+
+.detail-value {
+    color: var(--text-dark);
+}

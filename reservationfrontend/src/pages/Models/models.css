@@ -1,0 +1,143 @@
+:root {
+    --primary-color: #0d3b66;   /* deep navy */
+    --accent-color: #f95738;    /* warm coral */
+    --text-dark: #333;
+    --bg-light: #fff;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+.models-page {
+    padding: 2rem;
+    background: #f4f4f9;
+    min-height: 100vh;
+}
+
+.models-header {
+    text-align: center;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.models-header.error {
+    color: var(--accent-color);
+}
+
+.models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.model-card {
+    background: var(--bg-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.model-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px var(--shadow);
+}
+
+.model-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+}
+
+.model-specs {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.model-specs li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.btn-view {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.btn-view:hover {
+    background: #d94f30;
+}
+
+/* Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.pagination-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #062845;
+}
+
+.page-info {
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+/* “Create” button */
+.creation-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--accent-color);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: background 0.2s ease;
+}
+
+.creation-button:hover {
+    background: #d94f30;
+}

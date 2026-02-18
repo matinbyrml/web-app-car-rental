@@ -1,0 +1,89 @@
+.userInfo {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  .userInfo header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .userInfo h1 {
+    font-size: 28px;
+    color: #333;
+  }
+  
+  .userInfo button {
+    padding: 10px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .userInfo button:hover {
+    background-color: #0056b3;
+  }
+  
+  .delete-button {
+    background-color: #dc3545;
+  }
+  
+  .delete-button:hover {
+    background-color: #a71d2a;
+  }
+  
+  .edit-form, .details-view {
+    margin-top: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #444;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+  
+  .detail-item {
+    margin-bottom: 10px;
+  }
+  
+  .detail-label {
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .detail-value {
+    margin-left: 10px;
+    color: #333;
+  }
+  
+  .creation-button {
+    margin-top: 20px;
+  }
+  

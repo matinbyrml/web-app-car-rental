@@ -1,0 +1,277 @@
+services:
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9091:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    restart: unless-stopped
+
+  # Grafana - Dashboards & Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+
+  # Loki - Log Aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  # Promtail - Log Collection
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yaml
+      - ./ReservationService/logs:/var/log/spring-boot/reservation:ro
+      - ./UserManagementService/logs:/var/log/spring-boot/user-management:ro
+      - ./PaymentService/logs:/var/log/spring-boot/payment:ro
+      - ./CarTrackingService/logs:/var/log/spring-boot/car-tracking:ro
+      - ./APIGateway/logs:/var/log/spring-boot/api-gateway:ro
+      - /var/log:/var/log/host:ro
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+    depends_on:
+      - loki
+  # PostgreSQL database
+  postgres:
+    image: postgres:latest
+    container_name: postgres_multi_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-group9isthebest}
+      POSTGRES_MULTIPLE_DATABASES: db_reservation:user_reservation:pass_reservation;db_usermanagement:user_usermanagement:pass_usermanagement;db_payment:user_payment:pass_payment;db_car_tracking:user_car_tracking:pass_car_tracking
+    volumes:
+      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    command:
+     - "postgres"
+     - "-c"
+     - "wal_level=logical"
+
+  # Kafka
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: paypal-demo-kafka
+    ports:
+      - "9094:9094"  # expose Kafka for host access
+    environment:
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:9094,CONTROLLER://:9093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
+  # Kafka Connect
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: paypal-demo-kafka-connect
+    depends_on:
+      - kafka
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REQUEST_TIMEOUT_MS: 60000
+      CONNECT_RETRIES: 10
+      CONNECT_RETRY_BACKOFF_MS: 5000
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: kafka-connect
+      CONNECT_CONFIG_STORAGE_TOPIC: kafka-connect-config
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: kafka-connect-offset
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_PARTITIONS: -1
+      CONNECT_OFFSET_PARTITION_NAME: kafka-connect.1
+      CONNECT_STATUS_STORAGE_TOPIC: kafka-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_PARTITIONS: -1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+    volumes:
+      - kafka_connect_plugins:/usr/share/confluent-hub-components
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing Debezium connector."
+        confluent-hub install debezium/debezium-connector-postgresql:latest --no-prompt
+        echo "Starting Kafka Connect."
+        /etc/confluent/docker/run
+    ports:
+      - "8083:8083"
+  # Setup Debezium connector
+  setup-connector:
+    image: curlimages/curl:latest
+    container_name: setup-connector
+    depends_on:
+      - kafka-connect
+      - postgres
+    restart: "no"
+    command: >-
+      sh -c '
+        echo "Waiting for Kafka Connect to become available…";
+        until curl -s -f http://kafka-connect:8083/connectors; do
+          echo "  ⏳ not ready yet, retrying in 5s…";
+          sleep 5;
+        done;
+
+        echo "✅ Kafka Connect is up. Registering paypal connector…";
+        RESPONSE_PAYPAL=$$(
+          curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            --data '\''{
+              "name": "paypal-outbox-connector",
+              "config": {
+                "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+                "database.hostname": "postgres",
+                "database.port": "5432",
+                "database.user": "postgres",
+                "database.password": "group9isthebest",
+                "database.dbname": "db_payment",
+                "slot.name": "debezium_payment",
+                "database.server.name": "paypal",
+                "table.include.list": "public.paypal_outbox_events",
+                "topic.prefix": "paypal",
+                "transforms": "unwrap",
+                "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+                "transforms.unwrap.drop.tombstones": "true",
+                "plugin.name": "pgoutput",
+                "key.converter.schemas.enable": "false",
+                "value.converter.schemas.enable": "false",
+                "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+                "snapshot.mode": "initial"
+              }
+            }'\'' \
+            http://kafka-connect:8083/connectors
+        );
+
+        echo "✅ Registering reservation connector…";
+        RESPONSE_RESERVATION=$$(
+          curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            --data '\''{
+              "name": "reservation-outbox-connector",
+              "config": {
+                "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+                "database.hostname": "postgres",
+                "database.port": "5432",
+                "database.user": "postgres",
+                "database.password": "group9isthebest",
+                "database.dbname": "db_reservation",
+                "slot.name": "debezium_reservation",
+                "database.server.name": "reservation",
+                "table.include.list": "public.reservation_outbox",
+                "topic.prefix": "reservation",
+                "transforms": "unwrap",
+                "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+                "transforms.unwrap.drop.tombstones": "true",
+                "plugin.name": "pgoutput",
+                "key.converter.schemas.enable": "false",
+                "value.converter.schemas.enable": "false",
+                "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+                "snapshot.mode": "initial"
+              }
+            }'\'' \
+            http://kafka-connect:8083/connectors
+        );
+
+        case "$$RESPONSE_PAYPAL" in
+          201|409)
+            echo "✅ PayPal connector success: HTTP $$RESPONSE_PAYPAL";
+            ;;
+          *)
+            echo "❌ Failed PayPal connector: HTTP $$RESPONSE_PAYPAL";
+            exit 1
+            ;;
+        esac
+
+        case "$$RESPONSE_RESERVATION" in
+          201|409)
+            echo "✅ Reservation connector success: HTTP $$RESPONSE_RESERVATION";
+            ;;
+          *)
+            echo "❌ Failed Reservation connector: HTTP $$RESPONSE_RESERVATION";
+            exit 1
+            ;;
+        esac
+      '
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.4
+    ports:
+      - "9090:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: password
+    volumes:
+      - ./alberioauto-realm.json:/opt/keycloak/data/import/alberioauto-realm.json:ro
+    command: start-dev --import-realm
+
+#  keycloak-seed:
+#    image: curlimages/curl:8.8.0
+#    depends_on: [ keycloak ]  # service_started is enough because we wait via curl below
+#    entrypoint: [ "sh", "-c" ]
+#    command: [ "/usr/local/bin/keycloak-seed.sh" ]
+#    volumes:
+#      - ./keycloak-seed.sh:/usr/local/bin/keycloak-seed.sh:ro
+
+
+volumes:
+  postgres_data:
+  kafka_data:
+  kafka_connect_plugins:
+  prometheus_data:
+  grafana_data:
+  loki_data:

@@ -1,0 +1,60 @@
+# Prometheus Configuration - Essential Services Only
+global:
+  scrape_interval: 15s # Default scrape interval
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+
+# A scrape configuration containing only essential services:
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']  # Internal container address
+    scrape_interval: 15s
+
+  # ReservationService - Spring Boot microservice
+  - job_name: 'reservation-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    scrape_interval: 10s
+
+  # UserManagementService - Spring Boot microservice
+  - job_name: 'user-management-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8081']
+    scrape_interval: 10s
+
+  # PaymentService - Spring Boot microservice
+  - job_name: 'payment-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8082']
+    scrape_interval: 10s
+
+
+  # APIGateway - Spring Boot microservice
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8084']
+    scrape_interval: 10s
+
+  # CarTrackingService - Spring Boot microservice
+  - job_name: 'car-tracking-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8085']
+    scrape_interval: 10s
+
+  # Loki - Log aggregation service
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']  # Internal container address
+    scrape_interval: 30s
+
+  # Grafana - Visualization service
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']  # Internal container address
+    scrape_interval: 30s

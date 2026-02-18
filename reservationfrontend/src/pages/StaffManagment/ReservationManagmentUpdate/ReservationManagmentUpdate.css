@@ -1,0 +1,82 @@
+.reservation-update-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reservation-update-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.reservation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reservation-form div {
+  display: flex;
+  flex-direction: column;
+}
+
+.reservation-form label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: #555;
+}
+
+.reservation-form input {
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.reservation-form input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.update-btn {
+  margin-top: 1rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.update-btn:hover {
+  background: #0056b3;
+}
+
+.update-btn:disabled {
+  background: #dee2e6;
+  cursor: not-allowed;
+}
+
+.reservation-update-container p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.reservation-update-container p[style*="color: red"] {
+  font-weight: 500;
+}
+
+.reservation-update-container p[style*="color: green"] {
+  font-weight: 500;
+}

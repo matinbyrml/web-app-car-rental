@@ -1,0 +1,71 @@
+:root {
+    --primary-color: #0d3b66;   /* deep navy */
+    --accent-color: #f95738;    /* warm coral */
+    --text-light: #f4f4f9;
+}
+
+.navbar {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.5rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    text-align: center;
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.logo-icon {
+    margin-right: 0.5rem;
+    font-size: 1.8rem;
+}
+
+.nav-menu {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-item {
+    /* nothing needed here unless you want extra spacing */
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.nav-link .icon {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.nav-link:hover {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+.nav-link.active {
+    background-color: var(--accent-color);
+    color: #fff;
+}
